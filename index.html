@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+        <input type="file" id="inputFile" name="inputFile" accept="image/png, image/jpeg"  onchange="loadFile(event)">
+        <br>
+        <img id="output" src="{{ preImg }}" height="256"/>
+        <script>
+          var loadFile = function(event) {
+            var output = document.getElementById('output');
+            var estimateText  = document.getElementById('estimateText');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            estimateText.innerHTML = ""
+            output.onload = function() {
+              URL.revokeObjectURL(output.src) // free memory
+            }
+          };
+        </script>
+        <br>
+        <button onclick="myFunction()">Estimate Crowd Size</button>
+        <p id="estimateText">{{ estimateText }}</p>
+        <script type="text/javascript">
+            var backend = null;
+            function myFunction()
+            {
+                var element = document.getElementById('inputFile');
+                var file = element.files[0];
+                var reader = new FileReader();
+                reader.onloadend = function() {
+                    new QWebChannel(qt.webChannelTransport, function(channel) {
+                        backend = channel.objects.backend;
+                        backend.crowdcount(reader.result);
+                    });
+                }
+                reader.readAsDataURL(file);
+            }
+        </script>
+        <style>
+            p{
+                font-family: Arial, Helvetica, sans-serif;
+                text-align: center;
+            }
+            input{
+                margin: auto;
+                display: block;
+            }
+            button{
+                margin: auto;
+                display: block;
+            }
+            img{
+                margin: auto;
+                display: block;
+            }
+        </style>
+    </body>
+</html>
